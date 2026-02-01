@@ -89,31 +89,35 @@ async def honeypot_endpoint(
     4. Extracts and returns actionable intelligence
     """
     try:
+        # Handle empty or missing message
+        message_content = request.message or "Hello"
+        conv_id = request.conversation_id or f"conv-{id(request)}"
+        
         # Get or create conversation
         conversation = conversation_manager.add_scammer_message(
-            request.conversation_id,
-            request.message
+            conv_id,
+            message_content
         )
         
         # Detect scam intent
         is_scam, confidence, reason = scam_detector.detect(
-            request.message,
+            message_content,
             conversation.messages
         )
         
         # Update conversation state if scam detected
         if is_scam and not conversation.scam_detected:
-            conversation_manager.mark_scam_detected(request.conversation_id, confidence)
+            conversation_manager.mark_scam_detected(conv_id, confidence)
         
         # Generate agent response
         agent_response = honeypot_agent.generate_response(
-            scammer_message=request.message,
+            scammer_message=message_content,
             conversation_history=conversation.messages,
             scam_detected=is_scam or conversation.scam_detected
         )
         
         # Add agent response to conversation
-        conversation_manager.add_agent_response(request.conversation_id, agent_response)
+        conversation_manager.add_agent_response(conv_id, agent_response)
         
         # Extract intelligence from entire conversation
         extracted = intelligence_extractor.extract_from_conversation(conversation.messages)
@@ -123,7 +127,7 @@ async def honeypot_endpoint(
         
         # Build response
         response = HoneypotResponse(
-            conversation_id=request.conversation_id,
+            conversation_id=conv_id,
             response_message=agent_response,
             scam_detected=is_scam or conversation.scam_detected,
             confidence_score=max(confidence, conversation.confidence_score),

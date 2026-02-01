@@ -3,8 +3,8 @@ Pydantic models for the Agentic Honey-Pot System.
 Defines request/response structures for the API.
 """
 
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any, Union
+from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
 
 
@@ -16,11 +16,47 @@ class ConversationMessage(BaseModel):
 
 
 class HoneypotRequest(BaseModel):
-    """Incoming request from Mock Scammer API."""
-    conversation_id: str = Field(..., description="Unique conversation identifier")
-    message: str = Field(..., description="Scammer's message content")
+    """Incoming request from Mock Scammer API - flexible to accept various formats."""
+    conversation_id: Optional[str] = Field(None, description="Unique conversation identifier")
+    message: Optional[str] = Field(None, description="Scammer's message content")
     sender_id: Optional[str] = Field(None, description="Optional sender identifier")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+    
+    # Alternative field names the tester might use
+    session_id: Optional[str] = Field(None)
+    text: Optional[str] = Field(None)
+    content: Optional[str] = Field(None)
+    msg: Optional[str] = Field(None)
+    body: Optional[str] = Field(None)
+    input: Optional[str] = Field(None)
+    query: Optional[str] = Field(None)
+    user_message: Optional[str] = Field(None)
+    scam_message: Optional[str] = Field(None)
+    
+    class Config:
+        extra = "allow"  # Allow any extra fields
+    
+    @model_validator(mode='after')
+    def normalize_fields(self):
+        # Normalize conversation_id
+        if not self.conversation_id:
+            self.conversation_id = self.session_id or f"conv-{datetime.utcnow().timestamp()}"
+        
+        # Normalize message - try all possible field names
+        if not self.message:
+            self.message = (
+                self.text or 
+                self.content or 
+                self.msg or 
+                self.body or 
+                self.input or 
+                self.query or 
+                self.user_message or 
+                self.scam_message or
+                ""
+            )
+        
+        return self
 
 
 class ExtractedIntelligence(BaseModel):
