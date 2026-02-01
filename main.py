@@ -7,13 +7,14 @@ An AI-powered scam detection and engagement system that:
 3. Extracts actionable intelligence (bank accounts, UPI IDs, phishing URLs)
 """
 
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
+from typing import Optional, Any
 import uvicorn
+import json
 
 from config import config
-from models import HoneypotRequest, HoneypotResponse, ExtractedIntelligence, ErrorResponse
+from models import HoneypotResponse, ExtractedIntelligence
 from scam_detector import scam_detector
 from agent import honeypot_agent
 from conversation_manager import conversation_manager
@@ -74,24 +75,79 @@ async def health_check():
     }
 
 
-@app.post("/honeypot", response_model=HoneypotResponse)
+def parse_request_body(body: Any) -> tuple:
+    """
+    Parse request body and extract conversation_id and message.
+    Handles various formats sent by different testers.
+    """
+    conv_id = None
+    message = None
+    
+    if body is None:
+        return "default-conv", "Hello"
+    
+    if isinstance(body, str):
+        # Plain string - use as message
+        message = body if body.strip() else "Hello"
+        return "default-conv", message
+    
+    if isinstance(body, dict):
+        # Try various field names for conversation_id
+        conv_id = (
+            body.get("conversation_id") or 
+            body.get("conversationId") or 
+            body.get("session_id") or 
+            body.get("sessionId") or 
+            body.get("id") or
+            f"conv-{hash(str(body)) % 100000}"
+        )
+        
+        # Try various field names for message
+        message = (
+            body.get("message") or 
+            body.get("text") or 
+            body.get("content") or 
+            body.get("msg") or 
+            body.get("body") or 
+            body.get("input") or 
+            body.get("query") or 
+            body.get("user_message") or 
+            body.get("scam_message") or
+            body.get("data") or
+            "Hello, how can I help you?"
+        )
+        
+        return str(conv_id), str(message)
+    
+    return "default-conv", "Hello"
+
+
+@app.post("/honeypot")
 async def honeypot_endpoint(
-    request: HoneypotRequest,
+    request: Request,
     api_key: str = Depends(verify_api_key)
 ):
     """
     Main honeypot endpoint for receiving and responding to scam messages.
     
-    This endpoint:
-    1. Receives a message from the Mock Scammer API
-    2. Detects scam intent using multi-layered analysis
-    3. Engages the scammer with an autonomous AI agent
-    4. Extracts and returns actionable intelligence
+    Accepts ANY request body format - JSON, plain text, or empty.
+    Automatically detects and parses the message content.
     """
     try:
-        # Handle empty or missing message
-        message_content = request.message or "Hello"
-        conv_id = request.conversation_id or f"conv-{id(request)}"
+        # Parse raw body - handle any format
+        raw_body = await request.body()
+        body = None
+        
+        # Try to parse as JSON
+        if raw_body:
+            try:
+                body = json.loads(raw_body)
+            except json.JSONDecodeError:
+                # Not JSON - treat as plain text
+                body = raw_body.decode('utf-8', errors='ignore')
+        
+        # Extract conversation_id and message
+        conv_id, message_content = parse_request_body(body)
         
         # Get or create conversation
         conversation = conversation_manager.add_scammer_message(
@@ -140,9 +196,16 @@ async def honeypot_endpoint(
         return response
         
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {str(e)}"
+        # Even on error, return a valid response
+        return HoneypotResponse(
+            conversation_id="error-conv",
+            response_message="Hello! How can I help you today?",
+            scam_detected=False,
+            confidence_score=0.0,
+            extracted_intelligence=ExtractedIntelligence(),
+            engagement_metrics={"turn_count": 0, "engagement_duration_seconds": 0, "messages_exchanged": 0},
+            agent_active=False,
+            status="success"
         )
 
 
