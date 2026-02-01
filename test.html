@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satark AI | Honey-Pot Security System</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050508;
+            --bg-card: rgba(15, 15, 25, 0.8);
+            --bg-glass: rgba(20, 20, 35, 0.6);
+            --accent-primary: #00f5d4;
+            --accent-secondary: #7b2cbf;
+            --accent-warning: #ffd60a;
+            --accent-danger: #ff006e;
+            --accent-success: #06ffa5;
+            --text-primary: #ffffff;
+            --text-secondary: #8b8b9e;
+            --border-glow: rgba(0, 245, 212, 0.3);
+            --gradient-primary: linear-gradient(135deg, #00f5d4 0%, #7b2cbf 50%, #ff006e 100%);
+            --gradient-card: linear-gradient(145deg, rgba(0, 245, 212, 0.1) 0%, rgba(123, 44, 191, 0.05) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(0, 245, 212, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(123, 44, 191, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 0, 110, 0.05) 0%, transparent 40%);
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(-2%, -2%) rotate(1deg);
+            }
+
+            66% {
+                transform: translate(2%, 2%) rotate(-1deg);
+            }
+        }
+
+        /* Grid Pattern Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image:
+                linear-gradient(rgba(0, 245, 212, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 212, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(0, 245, 212, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(0, 245, 212, 0.8), 0 0 60px rgba(123, 44, 191, 0.4);
+            }
+        }
+
+        .logo-text h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .status-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 245, 212, 0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .status-chip:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 245, 212, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(6, 255, 165, 0.7);
+            }
+
+            50% {
+                opacity: 0.8;
+                box-shadow: 0 0 0 10px rgba(6, 255, 165, 0);
+            }
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 1.5rem;
+            min-height: calc(100vh - 180px);
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 212, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 245, 212, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        /* Input Section */
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 245, 212, 0.2);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 245, 212, 0.15);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-secondary);
+        }
+
+        textarea.input-field {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Cyber Button */
+        .cyber-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-primary), #00c9a7);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .cyber-btn:hover::before {
+            left: 100%;
+        }
+
+        .cyber-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 245, 212, 0.4);
+        }
+
+        .cyber-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Conversation Panel */
+        .conversation-panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .conversation-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            max-height: 400px;
+        }
+
+        .message-bubble {
+            max-width: 90%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            position: relative;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble.scammer {
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.15), rgba(255, 0, 110, 0.05));
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-bubble.agent {
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.15), rgba(0, 245, 212, 0.05));
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .message-bubble.scammer .message-label {
+            color: var(--accent-danger);
+        }
+
+        .message-bubble.agent .message-label {
+            color: var(--accent-primary);
+        }
+
+        .message-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Metrics Dashboard */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
+        .metric-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.25rem;
+        }
+
+        .metric-card.danger .metric-value {
+            background: linear-gradient(135deg, var(--accent-danger), #ff4d6d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-card.danger::before {
+            background: var(--accent-danger);
+        }
+
+        /* Threat Level Gauge */
+        .threat-gauge {
+            margin-bottom: 1.5rem;
+        }
+
+        .gauge-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50px;
+            height: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-success), var(--accent-warning), var(--accent-danger));
+            border-radius: 50px;
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        .gauge-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Intelligence Panel */
+        .intel-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .intel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .intel-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .intel-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: 'Space Grotesk', monospace;
+            animation: tagAppear 0.5s ease-out;
+        }
+
+        @keyframes tagAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .intel-tag.bank {
+            background: rgba(255, 0, 110, 0.15);
+            border: 1px solid rgba(255, 0, 110, 0.4);
+            color: #ff4d6d;
+        }
+
+        .intel-tag.upi {
+            background: rgba(255, 214, 10, 0.15);
+            border: 1px solid rgba(255, 214, 10, 0.4);
+            color: var(--accent-warning);
+        }
+
+        .intel-tag.url {
+            background: rgba(123, 44, 191, 0.15);
+            border: 1px solid rgba(123, 44, 191, 0.4);
+            color: #a855f7;
+        }
+
+        .intel-tag.ifsc {
+            background: rgba(0, 245, 212, 0.15);
+            border: 1px solid rgba(0, 245, 212, 0.4);
+            color: var(--accent-primary);
+        }
+
+        .intel-tag.phone {
+            background: rgba(6, 255, 165, 0.15);
+            border: 1px solid rgba(6, 255, 165, 0.4);
+            color: var(--accent-success);
+        }
+
+        .no-intel {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        /* Agent Response Box */
+        .agent-response-box {
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(123, 44, 191, 0.05));
+            border: 1px solid rgba(0, 245, 212, 0.2);
+            border-radius: 16px;
+            padding: 1.25rem;
+            position: relative;
+        }
+
+        .agent-response-box::before {
+            content: '🤖';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--bg-dark);
+            padding: 0 0.5rem;
+        }
+
+        .agent-response-label {
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+        }
+
+        .agent-response-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        /* Quick Scenarios */
+        .quick-scenarios {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .scenario-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scenario-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .scenario-btn {
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scenario-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Feature Buttons */
+        .feature-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .feature-btn {
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+            background: rgba(0, 245, 212, 0.05);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        /* Loading Animation */
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: loadingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes loadingBounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: toastSlide 0.3s ease-out;
+        }
+
+        @keyframes toastSlide {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .status-indicators {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">
+                    <h1>SATARK AI</h1>
+                    <p>Honey-Pot Security System</p>
+                </div>
+            </div>
+            <div class="status-indicators">
+                <div class="status-chip">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <div class="status-chip">
+                    <span>🤖 AI Agent Active</span>
+                </div>
+                <div class="status-chip">
+                    <span>🔒 Protected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Panel - Input -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon">📨</div>
+                    <h2 class="card-title">Scam Simulator</h2>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Conversation ID</label>
+                    <input type="text" class="input-field" id="convId" value="session-001" placeholder="Unique ID">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Scammer Message</label>
+                    <textarea class="input-field" id="message"
+                        placeholder="Type a scam message to test the system...">Congratulations! You have won Rs. 25 Lakhs in our lucky draw! To claim, send your bank account number, IFSC code, and UPI ID to verify your identity.</textarea>
+                </div>
+
+                <button class="cyber-btn" id="sendBtn" onclick="sendMessage()">
+                    ⚡ Engage Scammer
+                </button>
+
+                <!-- Quick Scenarios -->
+                <div class="quick-scenarios">
+                    <div class="scenario-label">Quick Test Scenarios</div>
+                    <div class="scenario-btns">
+                        <button class="scenario-btn" onclick="loadScenario('lottery')">🎰 Lottery</button>
+                        <button class="scenario-btn" onclick="loadScenario('kyc')">🏦 KYC Fraud</button>
+                        <button class="scenario-btn" onclick="loadScenario('job')">💼 Job Scam</button>
+                        <button class="scenario-btn" onclick="loadScenario('otp')">🔢 OTP Fraud</button>
+                        <button class="scenario-btn" onclick="loadScenario('loan')">💰 Loan Scam</button>
+                    </div>
+                </div>
+
+                <!-- Feature Buttons -->
+                <div class="feature-buttons">
+                    <button class="feature-btn" onclick="clearConversation()">🗑️ Clear Chat</button>
+                    <button class="feature-btn" onclick="exportData()">📥 Export Intel</button>
+                    <button class="feature-btn" onclick="window.open('/docs')">📚 API Docs</button>
+                    <button class="feature-btn" onclick="checkHealth()">💚 Health Check</button>
+                </div>
+            </div>
+
+            <!-- Center Panel - Conversation -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon">💬</div>
+                    <h2 class="card-title">Live Conversation</h2>
+                </div>
+
+                <div class="conversation-panel">
+                    <div class="conversation-messages" id="conversationLog">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎭</div>
+                            <p>Waiting for scam message...</p>
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem;">The AI agent will engage and extract
+                                intelligence</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Intelligence -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h2 class="card-title">Threat Analysis</h2>
+                </div>
+
+                <!-- Threat Gauge -->
+                <div class="threat-gauge">
+                    <div class="gauge-container">
+                        <div class="gauge-fill" id="threatGauge" style="width: 0%"></div>
+                    </div>
+                    <div class="gauge-label">
+                        <span>Safe</span>
+                        <span id="threatLevel">Analyzing...</span>
+                        <span>Critical</span>
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card" id="scamCard">
+                        <div class="metric-value" id="scamStatus">—</div>
+                        <div class="metric-label">Scam Status</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="confidence">0%</div>
+                        <div class="metric-label">Confidence</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="turnCount">0</div>
+                        <div class="metric-label">Turns</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="duration">0s</div>
+                        <div class="metric-label">Duration</div>
+                    </div>
+                </div>
+
+                <!-- Agent Response -->
+                <div class="agent-response-box">
+                    <div class="agent-response-label">Agent Response</div>
+                    <div class="agent-response-text" id="agentResponse">
+                        Waiting for interaction...
+                    </div>
+                </div>
+
+                <!-- Extracted Intelligence -->
+                <div class="intel-section">
+                    <div class="intel-header">
+                        <span>🔍</span>
+                        <span>Extracted Intelligence</span>
+                    </div>
+                    <div class="intel-items" id="intelItems">
+                        <span class="no-intel">No intelligence captured yet</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const API_KEY = 'satark-honeypot-2026';
+        let allIntel = { bank_accounts: [], upi_ids: [], phishing_urls: [], ifsc_codes: [], phone_numbers: [] };
+
+        const scenarios = {
+            lottery: "Dear customer, Congratulations! 🎉 You have WON Rs. 50,00,000 in SBI Lucky Draw! Send your Account Number 1234567890123456 and IFSC SBIN0012345 to claim. Contact: lottery@scam.com or call 9876543210",
+            kyc: "⚠️ URGENT: Your bank account will be BLOCKED in 24 hours! Complete KYC immediately by sending OTP and your debit card CVV to avoid suspension. Reply NOW!",
+            job: "Hi! Amazon is hiring work-from-home data entry. Salary Rs. 50,000/month! Pay registration fee of Rs. 500 to scammer99@paytm. Limited slots! Apply: http://fake-amazon-jobs.com/apply",
+            otp: "Your account shows suspicious activity! Share the OTP sent to your phone IMMEDIATELY or your account will be permanently locked. This is official bank security.",
+            loan: "INSTANT LOAN APPROVED! Get Rs. 5 Lakhs in 10 minutes! No documents needed. Just pay processing fee to UPI: quickloan@ybl. Visit: http://instant-loan-scam.in"
+        };
+
+        function loadScenario(type) {
+            document.getElementById('message').value = scenarios[type];
+            showToast('✅ Scenario loaded: ' + type.toUpperCase());
+        }
+
+        async function sendMessage() {
+            const btn = document.getElementById('sendBtn');
+            const convId = document.getElementById('convId').value;
+            const message = document.getElementById('message').value;
+
+            if (!message.trim()) {
+                showToast('⚠️ Please enter a message');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+            addToLog('scammer', message);
+
+            try {
+                const response = await fetch(`${API_URL}/honeypot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    body: JSON.stringify({ conversation_id: convId, message: message })
+                });
+
+                const data = await response.json();
+                console.log('Response:', data);
+
+                // Update threat gauge
+                const threatPercent = data.confidence_score * 100;
+                document.getElementById('threatGauge').style.width = threatPercent + '%';
+                document.getElementById('threatLevel').textContent =
+                    threatPercent > 70 ? '🔴 HIGH THREAT' :
+                        threatPercent > 40 ? '🟡 MODERATE' : '🟢 LOW';
+
+                // Update metrics
+                const scamCard = document.getElementById('scamCard');
+                document.getElementById('scamStatus').textContent = data.scam_detected ? '⚠️ SCAM' : '✅ SAFE';
+                scamCard.className = data.scam_detected ? 'metric-card danger' : 'metric-card';
+
+                document.getElementById('confidence').textContent = Math.round(data.confidence_score * 100) + '%';
+                document.getElementById('turnCount').textContent = data.engagement_metrics.turn_count;
+                document.getElementById('duration').textContent = data.engagement_metrics.engagement_duration_seconds.toFixed(1) + 's';
+
+                // Update agent response
+                document.getElementById('agentResponse').textContent = data.response_message;
+                addToLog('agent', data.response_message);
+
+                // Update intelligence with accumulation
+                updateIntelligence(data.extracted_intelligence);
+
+                document.getElementById('message').value = '';
+                showToast(data.scam_detected ? '🚨 Scam Detected!' : '✅ Message Analyzed');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('❌ Connection failed. Is server running?');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '⚡ Engage Scammer';
+        }
+
+        function addToLog(role, content) {
+            const log = document.getElementById('conversationLog');
+            if (log.querySelector('.empty-state')) {
+                log.innerHTML = '';
+            }
+
+            const msg = document.createElement('div');
+            msg.className = `message-bubble ${role}`;
+            msg.innerHTML = `
+                <div class="message-label">${role === 'scammer' ? '🎭 Scammer' : '🛡️ AI Agent'}</div>
+                <div class="message-content">${content}</div>
+            `;
+            log.appendChild(msg);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateIntelligence(intel) {
+            // Accumulate intelligence
+            if (intel.bank_accounts) allIntel.bank_accounts.push(...intel.bank_accounts);
+            if (intel.upi_ids) allIntel.upi_ids.push(...intel.upi_ids);
+            if (intel.phishing_urls) allIntel.phishing_urls.push(...intel.phishing_urls);
+            if (intel.ifsc_codes) allIntel.ifsc_codes.push(...intel.ifsc_codes);
+            if (intel.phone_numbers) allIntel.phone_numbers.push(...intel.phone_numbers);
+
+            // Deduplicate
+            allIntel.bank_accounts = [...new Set(allIntel.bank_accounts)];
+            allIntel.upi_ids = [...new Set(allIntel.upi_ids)];
+            allIntel.phishing_urls = [...new Set(allIntel.phishing_urls)];
+            allIntel.ifsc_codes = [...new Set(allIntel.ifsc_codes)];
+            allIntel.phone_numbers = [...new Set(allIntel.phone_numbers)];
+
+            const container = document.getElementById('intelItems');
+            const items = [];
+
+            allIntel.bank_accounts.forEach(acc => {
+                items.push(`<span class="intel-tag bank">🏦 ${acc}</span>`);
+            });
+            allIntel.ifsc_codes.forEach(code => {
+                items.push(`<span class="intel-tag ifsc">🏛️ ${code}</span>`);
+            });
+            allIntel.upi_ids.forEach(upi => {
+                items.push(`<span class="intel-tag upi">📱 ${upi}</span>`);
+            });
+            allIntel.phishing_urls.forEach(url => {
+                items.push(`<span class="intel-tag url">🔗 ${url}</span>`);
+            });
+            allIntel.phone_numbers.forEach(phone => {
+                items.push(`<span class="intel-tag phone">📞 ${phone}</span>`);
+            });
+
+            container.innerHTML = items.length > 0 ? items.join('') : '<span class="no-intel">No intelligence captured yet</span>';
+        }
+
+        function clearConversation() {
+            document.getElementById('conversationLog').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎭</div>
+                    <p>Waiting for scam message...</p>
+                </div>
+            `;
+            allIntel = { bank_accounts: [], upi_ids: [], phishing_urls: [], ifsc_codes: [], phone_numbers: [] };
+            document.getElementById('intelItems').innerHTML = '<span class="no-intel">No intelligence captured yet</span>';
+            document.getElementById('threatGauge').style.width = '0%';
+            document.getElementById('scamStatus').textContent = '—';
+            document.getElementById('confidence').textContent = '0%';
+            document.getElementById('turnCount').textContent = '0';
+            document.getElementById('duration').textContent = '0s';
+            document.getElementById('agentResponse').textContent = 'Waiting for interaction...';
+            showToast('🗑️ Conversation cleared');
+        }
+
+        function exportData() {
+            const data = JSON.stringify(allIntel, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'intelligence_report.json';
+            a.click();
+            showToast('📥 Intelligence exported');
+        }
+
+        async function checkHealth() {
+            try {
+                const res = await fetch(`${API_URL}/health`);
+                const data = await res.json();
+                showToast(`💚 ${data.status} | Groq: ${data.groq_configured ? '✓' : '✗'}`);
+            } catch (e) {
+                showToast('❌ Server not responding');
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Enter key support
+        document.getElementById('message').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) sendMessage();
+        });
+    </script>
+</body>
+
+</html>
