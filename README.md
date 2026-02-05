@@ -81,7 +81,7 @@ git push -u origin main
 
    | Key | Value |
    |-----|-------|
-   | `GROQ_API_KEY` | `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` |
+   | `GROQ_API_KEY` | `HAHAH you thought so` |
    | `HONEYPOT_API_KEY` | `satark-honeypot-2026` |
 
 6. **Click "Create Web Service"** and wait for deployment (~2-3 minutes)
